@@ -97,3 +97,27 @@ var logBits = function(num, showHex){
   if(showHex === true) console.log('0b%c' + prefixStr + '%c' + numBits + ' 0x' + num.toString(16), 'color: blue;', 'color: black;');
   else console.log('0b%c' + prefixStr + '%c' + numBits, 'color: blue;', 'color: black;');
 }
+
+//["0x1d", "0x0e", "0x0f"]
+//["0x5d", "0x4e", "0x4f"]
+//["0x9d", "0x8e", "0x8f"]
+/*
+hexToRgb( ["0x1d", "0x0e", "0x0f"], true )
+//> "rgb(29,14,15)"
+hexToRgb( ["0x5d", "0x4e", "0x4f"], true )
+//>"rgb(93,78,79)"
+hexToRgb( ["0x9d", "0x8e", "0x8f"], true )
+//>"rgb(157,142,143)"
+*/
+// R: we could also strip the '0x' & instad prefix the whole 3 rgb by '#' :)
+var hexToRgb = function(hexArr, rgbStr){
+  if (rgbStr == true) return 'rgb(' + Number(hexArr[0]) + ',' + Number(hexArr[1]) + ',' + Number(hexArr[2]) + ')';
+  else return {r: Number(hexArr[0]), g: Number(hexArr[1]), b: Number(hexArr[2]) };
+}
+/*  Usage:
+hexToRgb( genThreeLettersChunk('TEF', true) )
+//> {r: 29, g: 14, b: 15}
+
+hexToRgb( genThreeLettersChunk('TEF', true), true )
+//> "rgb(93,78,79)"
+*/
