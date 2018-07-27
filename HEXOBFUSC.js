@@ -26,6 +26,37 @@ offsetArr(myDic, 10);
 // - split random offset bits in 3 chunks
 // - prepend each of the random offset bits chunks to each of the letters bits
 // - output as three hex OR as a rgb value
+// generate three letters chunk
+var genThreeLettersChunk = function(threeCharsChunk, arr){
+  var charsArr = threeCharsChunk.split('').splice(0, 3); // delete anything after 3rd char
+  
+  // get mapping idx's
+  var firstLetterBin = asciiToInt(charsArr[0]);
+  var secondLetterBin = asciiToInt(charsArr[1]);
+  var thirdLetterBin = asciiToInt(charsArr[2]);
+  var randomOffsetBin = getRandomInt(0, 36);
+  
+  // process
+  var randomOffset1stChunk = randomOffsetBin >> 4; // discard the four last bits ( aka get 2 first bits )
+  var randomOffset2ndChunk = ( randomOffsetBin & 0b001100 ) >> 2; // discard the two last bits & two first bits
+  var randomOffset3rdChunk = randomOffsetBin & 0b000011; // gets only the two last bits  
+
+  // build
+  var firstByte = (randomOffset1stChunk << 6 ) | firstLetterBin;
+  var secondByte = (randomOffset1stChunk << 6) | secondLetterBin;
+  var thirdByte = (randomOffset1stChunk << 6) | thirdLetterBin;
+  
+  // post-proc
+  //var firstByteHex = firstByte.toString(16);
+  //var secondByteHex = secondByte.toString(16);
+  var firstByteHex = (firstByte.toString(16).length == 2 )? firstByte.toString(16) : '0' + firstByte.toString(16);
+  var secondByteHex = (secondByte.toString(16).length == 2) ? secondByte.toString(16) : '0' + secondByte.toString(16);
+  var thirdByteHex = (thirdByte.toString(16).length == 2) ? thirdByte.toString(16) : '0' + thirdByte.toString(16);
+  
+  // return hex's
+  if(arr === true) return['0x' + firstByteHex, '0x' + secondByteHex, '0x' + thirdByteHex];
+  else return '0x' + firstByteHex + ' 0x' + secondByteHex + ' 0x' + thirdByteHex;
+}
 
 // decoding 3 letters:
 // - get hex string
