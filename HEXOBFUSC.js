@@ -1,16 +1,55 @@
 /*
     Having a little fun encoding / decoding 3 letters from & to hex/rgb & using a random letter dic idx offset ;P
+    
+    Example output for the same input:
+    
+    Cmd: decodeThreeLettersChunk( genThreeLettersChunk('TEF', false) )
+    Outputs:
+    randomOffset: 0 => "TEF( offset: TEF )"
+    randomOffset: 9 => "K56( offset: TEF )"
+    randomOffset: 34 => "VGH( offset: TEF )"
+    randomOffset: 3 => "QBC( offset: TEF )"
+    ..
+    
+    Cmd2: decodeThreeLettersChunk( genThreeLettersChunk('TEF', false, 0) ) // last param is the not random offset if passed
+    Outputs:
+    
+    TODOs:
+    - write helpers to encode/ decode an entire sentence
+    - handle few more characters ( space, dot, equals, minus, plus, divide, multiply, left & right parenthesis/braces/brackets, .. )
+    - read input from an image through a canvas to getImgData
+    - save output to an image through a canvas &  putImgData
 */
 
 //var myArr = ['A', 'B', 'C', 'D']
 var myDic = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split(''); // 38 chars, idx [0..37]
 
-// offset arry to easily decode 3-bytes chunks
+// offset array to easily decode 3-bytes chunks
+/*
 var offsetArr = function(arr, offset){
   var tmpArr = arr.slice();
   for(var i=0; i < offset; i++){
     var off = tmpArr.shift();
     tmpArr.push(off);
+  }
+  return tmpArr;
+}
+*/
+var offsetArr = function(arr, offset){
+  var tmpArr = arr.slice();
+  // i > 0 -> CCW
+  if(offset > 0){
+    for(var i=0; i < offset; i++){
+      var off = tmpArr.shift();
+      tmpArr.push(off);
+    }
+  }
+  // i < 0 -> CW
+  if(offset < 0){
+    for(var i=offset; i < 0; i++){
+      var off = tmpArr.pop();
+      tmpArr.unshift(off);
+    }
   }
   return tmpArr;
 }
@@ -26,7 +65,15 @@ offsetArr(myDic, 10);
 // - split random offset bits in 3 chunks
 // - prepend each of the random offset bits chunks to each of the letters bits
 // - output as three hex OR as a rgb value
-// generate three letters chunk
+// ==
+// example ouput(s)
+// genThreeLettersChunk('TEF')
+//> "0x1d 0x0e 0x0f"
+// genThreeLettersChunk('TEF', true)
+//> ["0x5d", "0x4e", "0x4f"]
+// genThreeLettersChunk('TEF', false)
+//> "#9d8e8f"
+/* == following version doesn't offset stuff ;)
 var genThreeLettersChunk = function(threeCharsChunk, arr){
   var charsArr = threeCharsChunk.split('').splice(0, 3); // delete anything after 3rd char
   
@@ -55,12 +102,67 @@ var genThreeLettersChunk = function(threeCharsChunk, arr){
   
   // return hex's
   if(arr === true) return['0x' + firstByteHex, '0x' + secondByteHex, '0x' + thirdByteHex];
+  else if(arr === false) return '#' + firstByteHex + secondByteHex + thirdByteHex;
+  else return '0x' + firstByteHex + ' 0x' + secondByteHex + ' 0x' + thirdByteHex;
+}
+*/
+//var genThreeLettersChunk = function(threeCharsChunk, arr){
+var genThreeLettersChunk = function(threeCharsChunk, arr, offset){
+  var charsArr = threeCharsChunk.split('').splice(0, 3); // delete anything after 3rd char
+  
+  // get mapping idx's
+  var firstLetterBin = asciiToInt(charsArr[0]);
+  var secondLetterBin = asciiToInt(charsArr[1]);
+  var thirdLetterBin = asciiToInt(charsArr[2]);
+  var randomOffsetBin = (offset !== undefined)? offset : getRandomInt(0, 36);
+  //randomOffsetBin = 0b00111111; // DEBUG - works ( 0x3f / 63)
+  //randomOffsetBin = 0b00111100; // DEBUG - works ( 0x3c / 60 )
+  console.log( 'encoding randomOffset: ' + randomOffsetBin );
+  logBits(randomOffsetBin, true);
+    
+  // get offset-ed array
+  var offsetedArr = offsetArr(myDic, randomOffsetBin);
+
+  // get offset-ed mapping idx's
+  var firstLetterBinO = asciiToInt(charsArr[0], offsetedArr);
+  var secondLetterBinO = asciiToInt(charsArr[1], offsetedArr);
+  var thirdLetterBinO = asciiToInt(charsArr[2], offsetedArr);
+  
+  // process
+  var randomOffset1stChunk = randomOffsetBin >> 4; // discard the four last bits ( aka get 2 first bits )
+  var randomOffset2ndChunk = ( randomOffsetBin & 0b001100 ) >> 2; // discard the two last bits & two first bits
+  var randomOffset3rdChunk = randomOffsetBin & 0b000011; // gets only the two last bits
+  logBits(randomOffset1stChunk, true);
+  logBits(randomOffset2ndChunk, true);
+  logBits(randomOffset3rdChunk, true);
+
+  // build
+  var firstByte = (randomOffset1stChunk << 6 ) | firstLetterBinO; //firstLetterBin;
+  var secondByte = (randomOffset2ndChunk << 6) | secondLetterBinO; //secondLetterBin
+  var thirdByte = (randomOffset3rdChunk << 6) | thirdLetterBinO; //thirdLetterBin
+  
+  // post-proc
+  //var firstByteHex = firstByte.toString(16);
+  //var secondByteHex = secondByte.toString(16);
+  var firstByteHex = (firstByte.toString(16).length == 2 )? firstByte.toString(16) : '0' + firstByte.toString(16);
+  var secondByteHex = (secondByte.toString(16).length == 2) ? secondByte.toString(16) : '0' + secondByte.toString(16);
+  var thirdByteHex = (thirdByte.toString(16).length == 2) ? thirdByte.toString(16) : '0' + thirdByte.toString(16);
+  
+  // = DEBUG =
+  console.log('== GENERATED ==');
+  logBits(firstByte, true);
+  logBits(secondByte, true);
+  logBits(thirdByte, true);
+  
+  // return hex's
+  if(arr === true) return['0x' + firstByteHex, '0x' + secondByteHex, '0x' + thirdByteHex];
+  else if(arr === false) return '#' + firstByteHex + secondByteHex + thirdByteHex;
   else return '0x' + firstByteHex + ' 0x' + secondByteHex + ' 0x' + thirdByteHex;
 }
 
 // decoding 3 letters:
-// - get hex string
-// - split in 3 chunks of 2 hex chars
+// - get hex string OR arr
+// - split in 3 chunks of 2 hex chars each
 // - get their bits
 // - extract 2 first bits from each to build up the offset index
 // - offset array by that offset to get tmp array for those 3 letters
@@ -70,6 +172,90 @@ var genThreeLettersChunk = function(threeCharsChunk, arr){
 // - get first letter by using its index in offset-ed array
 // - get second letter by using its index in offset-ed array
 // - get third letter by using its index in offset-ed array
+/*
+decodeThreeLettersChunk('1D0E0F')
+decodeThreeLettersChunk('#1D0E0F')
+decodeThreeLettersChunk('0x1D 0x0E 0x0F')
+decodeThreeLettersChunk(['0x1D', '0x0E', '0x0F'])
+*/
+var decodeThreeLettersChunk = function(hexStrOrArr){
+  var cleanedHex;
+  if( Array.isArray(hexStrOrArr) === true ){
+    console.log('array');
+    // make sure we have an array that has length 3
+    if(hexStrOrArr.length !== 3){
+      console.log('Hex array doesn\'t contain enough items !');
+      return;
+    }
+    // clean array items ( hex within strings ) if prefixed with '0x'
+    var arrayItems = [];
+    for(var i=0; i < hexStrOrArr.length; i++){
+      arrayItems.push(hexStrOrArr[i].replace(/0x/g, '') );
+    }
+    // build up cleaned hex str
+    cleanedHex = arrayItems.join('');
+  }
+  else if( typeof hexStrOrArr === 'string' ){
+    console.log('string');
+    // remove '#' prefix, '0x' & 'space' from string if any
+    cleanedHex = hexStrOrArr.replace(/#/g, '').replace(/0x/g, '').replace(/ /g, '');
+    // make sure we have a string that is 6 chars long
+    if(cleanedHex.length < 6){
+      console.log('Hex string doesn\'t contain enough chars !');
+      return;
+    }
+  }
+  //  continue ..
+  //console.log(cleanedHex);
+
+  // split in 3 chunks of 2 chars each
+  var chunks = cleanedHex.match(/.{1,2}/g); // should give us
+  console.log(chunks);
+
+  // get their bits
+  var firstHexBits = Number( '0x' + chunks[0] );
+  var secondHexBits = Number( '0x' + chunks[1] );
+  var thirdHexBits = Number( '0x' + chunks[2] );
+  logBits(firstHexBits, true);
+  logBits(secondHexBits, true);
+  logBits(thirdHexBits, true);
+
+  // extract 2 first bits of each hex bits
+  var randomOffset1stChunk = firstHexBits >> 6;
+  var randomOffset2ndChunk = secondHexBits >> 6;
+  var randomOffset3rdChunk = thirdHexBits >> 6;
+  logBits(randomOffset1stChunk, true);
+  logBits(randomOffset2ndChunk, true);
+  logBits(randomOffset3rdChunk, true);
+
+  // build offset idx
+  var randomOffsetBin = ( randomOffset1stChunk << 4 ) | ( randomOffset2ndChunk << 2 ) | randomOffset3rdChunk;
+  console.log( 'decoded random offset: ' + randomOffsetBin );
+  logBits(randomOffsetBin, true);
+
+  // get offset-ed array
+  var offsetedArr = offsetArr(myDic, randomOffsetBin);
+
+  // extract letters idx chunks
+  var firstLetterIdxBin = firstHexBits & 0b00111111;
+  var secondLetterIdxBin = secondHexBits & 0b00111111;
+  var thirdLetterIdxBin = thirdHexBits & 0b00111111;
+
+  // get back letter from idx
+  var firstLetter = intToAscii(firstLetterIdxBin);
+  var secondLetter = intToAscii(secondLetterIdxBin);
+  var thirdLetter = intToAscii(thirdLetterIdxBin);
+  // get back letters from offset-ed array
+  var firstLetterO = intToAscii(firstLetterIdxBin, offsetedArr);
+  var secondLetterO = intToAscii(secondLetterIdxBin, offsetedArr);
+  var thirdLetterO = intToAscii(thirdLetterIdxBin, offsetedArr);
+
+  //return firstLetter+secondLetter+thirdLetter;
+  return firstLetter+secondLetter+thirdLetter + '( offset: '+ firstLetterO+secondLetterO+thirdLetterO + ' )';
+}
+
+// EXAMPLE OF COMBINED GENERATING THEN DECODING:
+// decodeThreeLettersChunk( genThreeLettersChunk('TEF', false) )
 
 
 // helper - to get a random inclusive number within a particular range
@@ -78,13 +264,14 @@ function getRandomInt(min, max) {
 }
 
 // helper - 
-function intToAscii(intCode)
-{
-    return myDic[intCode];
+function intToAscii(intCode, arr){
+  if(arr && Array.isArray(arr)) return arr[intCode];
+  else return myDic[intCode];
 }
 
-function asciiToInt(asciiChar){
-  return myDic.join('').indexOf(asciiChar);
+function asciiToInt(asciiChar, arr){
+  if(arr && Array.isArray(arr)) return arr.join('').indexOf(asciiChar);
+  else return myDic.join('').indexOf(asciiChar);
 }
 
 // helper - to better see bits lying within ..
