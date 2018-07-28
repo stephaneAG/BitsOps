@@ -12,7 +12,82 @@
     ..
     
     Cmd2: decodeThreeLettersChunk( genThreeLettersChunk('TEF', false, 0) ) // last param is the not random offset if passed
+    through helper: lookupThreeCharsHexGen('TEF', true) // true for final output logging
     Outputs:
+    TEF( offset: TEF )
+    SDE( offset: TEF )
+    RCD( offset: TEF )
+    QBC( offset: TEF )
+    PAB( offset: TEF )
+    O9A( offset: TEF )
+    N89( offset: TEF )
+    M78( offset: TEF )
+    L67( offset: TEF )
+    K56( offset: TEF )
+    J45( offset: TEF )
+    I34( offset: TEF )
+    H23( offset: TEF )
+    G12( offset: TEF )
+    F01( offset: TEF )
+    EZ0( offset: TEF )
+    DYZ( offset: TEF )
+    CXY( offset: TEF )
+    BWX( offset: TEF )
+    AVW( offset: TEF )
+    9UV( offset: TEF )
+    8TU( offset: TEF )
+    7ST( offset: TEF )
+    6RS( offset: TEF )
+    5QR( offset: TEF )
+    4PQ( offset: TEF )
+    3OP( offset: TEF )
+    2NO( offset: TEF )
+    1MN( offset: TEF )
+    0LM( offset: TEF )
+    ZKL( offset: TEF )
+    YJK( offset: TEF )
+    XIJ( offset: TEF )
+    WHI( offset: TEF )
+    VGH( offset: TEF )
+    UFG( offset: TEF )
+    
+    Corresponding hexs:
+    0x1d 0x0e 0x0f
+    0x1c 0x0d 0x4e
+    0x1b 0x0c 0x8d
+    0x1a 0x0b 0xcc
+    0x19 0x4a 0x0b
+    0x18 0x49 0x4a
+    0x17 0x48 0x89
+    0x16 0x47 0xc8
+    0x15 0x86 0x07
+    0x14 0x85 0x46
+    0x13 0x84 0x85
+    0x12 0x83 0xc4
+    0x11 0xc2 0x03
+    0x10 0xc1 0x42
+    0x0f 0xc0 0x81
+    0x0e 0xe3 0xc0
+    0x4d 0x22 0x23
+    0x4c 0x21 0x62
+    0x4b 0x20 0xa1
+    0x4a 0x1f 0xe0
+    0x49 0x5e 0x1f
+    0x48 0x5d 0x5e
+    0x47 0x5c 0x9d
+    0x46 0x5b 0xdc
+    0x45 0x9a 0x1b
+    0x44 0x99 0x5a
+    0x43 0x98 0x99
+    0x42 0x97 0xd8
+    0x41 0xd6 0x17
+    0x40 0xd5 0x56
+    0x63 0xd4 0x95
+    0x62 0xd3 0xd4
+    0xa1 0x12 0x13
+    0xa0 0x11 0x52
+    0x9f 0x10 0x91
+    0x9e 0x0f 0xd0
     
     TODOs:
     - write helpers to encode/ decode an entire sentence
@@ -54,6 +129,43 @@ var offsetArr = function(arr, offset){
   return tmpArr;
 }
 offsetArr(myDic, 10);
+
+// helper - lookup every possibility of encoding for a three chars chunk
+var lookupThreeCharsHexGen = function(threeCharsStr, log){
+  var generatedHexStrings = [];
+  for(var i=0; i < myDic.length; i++){
+    generatedHexStrings.push( decodeThreeLettersChunk( genThreeLettersChunk(threeCharsStr, false, i) ) );
+    //console.log(generatedHexStrings[i]);
+  }
+  if(log == true) generatedHexStrings.forEach(function(genStr){ console.log( genStr ); });
+  return generatedHexStrings;
+}
+
+// helper - same as the above but spitting out hex
+// usage:
+// lookupThreeCharsHex('TEF', true, undefined)
+//> 0xa0 0x11 0x52 ..
+// lookupThreeCharsHex('TEF', true, false)
+//> #a11213 ..
+// lookupThreeCharsHex('TEF', true, true)
+//> ["0x42", "0x97", "0xd8"]
+var lookupThreeCharsHex = function(threeCharsStr, log, outputType){
+  var generatedHexStrings = [];
+  for(var i=0; i < myDic.length; i++){
+    generatedHexStrings.push( genThreeLettersChunk(threeCharsStr, outputType, i) );
+    //console.log(generatedHexStrings[i]);
+  }
+  if(log == true) generatedHexStrings.forEach(function(genStr){ console.log( genStr ); });
+  return generatedHexStrings;
+}
+
+// helper to better visualize the "color-encoding-scheme" corresponding to our stuff
+var colorfulLogHex = function(threeCharsChunk){
+  var colorHexs = lookupThreeCharsHex(threeCharsChunk, true, false);
+  colorHexs.forEach(function(colorHex){
+    console.log('%c'+threeCharsChunk, 'color: '+colorHex+';' );
+  });
+}
 
 // encoding 3 letters:
 // - get random offset [0..37]
@@ -114,7 +226,8 @@ var genThreeLettersChunk = function(threeCharsChunk, arr, offset){
   var firstLetterBin = asciiToInt(charsArr[0]);
   var secondLetterBin = asciiToInt(charsArr[1]);
   var thirdLetterBin = asciiToInt(charsArr[2]);
-  var randomOffsetBin = (offset !== undefined)? offset : getRandomInt(0, 36);
+  //var randomOffsetBin = (offset !== undefined)? offset : getRandomInt(0, 36);
+  var randomOffsetBin = (offset !== undefined)? offset : getRandomInt(1, 36); // little tweak to ALWAYS offset the dic ;)
   //randomOffsetBin = 0b00111111; // DEBUG - works ( 0x3f / 63)
   //randomOffsetBin = 0b00111100; // DEBUG - works ( 0x3c / 60 )
   console.log( 'encoding randomOffset: ' + randomOffsetBin );
