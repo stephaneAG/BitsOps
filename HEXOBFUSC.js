@@ -97,7 +97,52 @@
 */
 
 //var myArr = ['A', 'B', 'C', 'D']
-var myDic = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split(''); // 38 chars, idx [0..37]
+//var myDic = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split(''); // 36 chars, idx [0..35]
+// R: max 64 chars possible ( idx [0..63] ), so let's make our dict 64 items
+// ( 64 == 0b01000000, 63 == 0b00111111 )
+var myDic = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'; // 36 chars
+myDic += ' ?.:;!=-+/*()[]{}<>#"\'\~|^&%@' // 28 chars
+myDic = myDic.split('');
+
+// helper - split sentence in a 3 chars chunk array
+var splitSentenceInTreeCharsChunks = function(sentenceStr){
+  var chunks = sentenceStr.match(/.{1,3}/g); // get chunks of 3 chars + reminder chars
+  console.log( chunks );
+  for(var i=0; i< chunks.length; i++){
+    var padding = 3 - chunks[i].length;
+    if(padding !== 0){
+      if(padding === 1) chunks[i] = chunks[i]+' ';
+      if(padding === 2) chunks[i] = chunks[i]+'  ';
+    }
+  }
+  console.log( chunks );
+  return chunks;
+}
+
+// helper - encode an entire sentence
+// Usage: encodeSentence('hello world !')
+//> ["0xdd 0x5a 0x21", "0xac 0xaf 0x7b", "0xb6 0xae 0xb1", "0x0c 0x84 0x5b", "0x27 0x22 0xa2"]
+var encodeSentence = function(sentence){
+  sentence = sentence.toUpperCase();
+  var hexChunks = [];
+  var strChunks = splitSentenceInTreeCharsChunks(sentence);
+  strChunks.forEach(function(strChunk){
+    hexChunks.push( genThreeLettersChunk( strChunk ) )
+  });
+  return hexChunks;
+}
+
+
+// helper - decode an entire sentence
+// Usage: decodeSentence(["0xdd 0x5a 0x21", "0xac 0xaf 0x7b", "0xb6 0xae 0xb1", "0x0c 0x84 0x5b", "0x27 0x22 0xa2"])
+//> "HELLO WORLD !"
+var decodeSentence = function(sentenceHexs){
+  var sentenceChunks = [];
+  sentenceHexs.forEach(function(sentenceHex){
+    sentenceChunks.push( decodeThreeLettersChunk( sentenceHex, true ) );
+  });
+  return sentenceChunks;
+}
 
 // offset array to easily decode 3-bytes chunks
 /*
@@ -227,7 +272,8 @@ var genThreeLettersChunk = function(threeCharsChunk, arr, offset){
   var secondLetterBin = asciiToInt(charsArr[1]);
   var thirdLetterBin = asciiToInt(charsArr[2]);
   //var randomOffsetBin = (offset !== undefined)? offset : getRandomInt(0, 36);
-  var randomOffsetBin = (offset !== undefined)? offset : getRandomInt(1, 36); // little tweak to ALWAYS offset the dic ;)
+  //var randomOffsetBin = (offset !== undefined)? offset : getRandomInt(1, 36); // little tweak to ALWAYS offset the dic ;)
+  var randomOffsetBin = (offset !== undefined)? offset : getRandomInt(1, myDic.length); // now offerinf 63 char offset support ;)
   //randomOffsetBin = 0b00111111; // DEBUG - works ( 0x3f / 63)
   //randomOffsetBin = 0b00111100; // DEBUG - works ( 0x3c / 60 )
   console.log( 'encoding randomOffset: ' + randomOffsetBin );
@@ -364,7 +410,9 @@ var decodeThreeLettersChunk = function(hexStrOrArr){
   var thirdLetterO = intToAscii(thirdLetterIdxBin, offsetedArr);
 
   //return firstLetter+secondLetter+thirdLetter;
-  return firstLetter+secondLetter+thirdLetter + '( offset: '+ firstLetterO+secondLetterO+thirdLetterO + ' )';
+  //return firstLetter+secondLetter+thirdLetter + '( offset: '+ firstLetterO+secondLetterO+thirdLetterO + ' )';
+  //return firstLetterO+secondLetterO+thirdLetterO + '( not offset: '+ firstLetter+secondLetter+thirdLetter + ' )';
+  return firstLetterO+secondLetterO+thirdLetterO ;  
 }
 
 // EXAMPLE OF COMBINED GENERATING THEN DECODING:
