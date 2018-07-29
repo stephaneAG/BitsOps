@@ -190,7 +190,8 @@ var decodeSentence = function(sentenceHexs){
   sentenceHexs.forEach(function(sentenceHex){
     sentenceChunks.push( decodeThreeLettersChunk( sentenceHex, true ) );
   });
-  return sentenceChunks;
+  //return sentenceChunks;
+  return sentenceChunks.join('').trim();
 }
 
 // offset array to easily decode 3-bytes chunks
