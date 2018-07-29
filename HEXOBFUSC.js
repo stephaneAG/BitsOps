@@ -146,6 +146,41 @@ var sentenceHexToRgb = function(sentenceHexStrArr){
   return rgbsArr;
 }
 
+// helper - generate a wide 1px tall image with pixel-encoded hex from an array of hexs
+var hexToImage = function(seq){
+  var rgbSeq = sentenceHexToRgb(seq);
+
+  // == canvas part ==
+  //var canvas = document.querySelector('canvas');
+  var canvas = document.createElement('canvas'); // offscreen canvas
+  canvas.height = 1;
+  canvas.width = rgbSeq.length; // number of 3hex chunks or r,g,b objs
+  var ctx = canvas.getContext('2d');
+  ctx.fillStyle = 'white'; // mandatory !
+  ctx.fillRect(0, 0, canvas.width, canvas.height); // mandatory !
+  var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  var data = imageData.data;
+  for(var i=0, j=0; i < data.length; i+=4, j++) {
+    data[i] = rgbSeq[j].r;
+    data[i + 1] = rgbSeq[j].g;
+    data[i + 2] = rgbSeq[j].b;
+  }
+  ctx.putImageData(imageData, 0, 0);
+  // saving the canvas
+  var canvasImg = canvas.toDataURL();
+  var newdata = canvasImg.replace(/^data:image\/png/,'data:application/octet-stream');
+  //window.open( newdata ); // doesn't allow us to specify a filename
+  var link = document.createElement('a');
+  link.setAttribute('download', 'output.png');
+  link.setAttribute('href', newdata);
+  link.click();
+}
+
+// helper - encodes a sentence to hex & then generate a wide 1px tall image with pixel-encoded hex
+var sentenceToImg = function(sentence){
+  hexToImage( encodeSentence(sentence) );
+}
+
 
 // helper - decode an entire sentence
 // Usage: decodeSentence(["0xdd 0x5a 0x21", "0xac 0xaf 0x7b", "0xb6 0xae 0xb1", "0x0c 0x84 0x5b", "0x27 0x22 0xa2"])
