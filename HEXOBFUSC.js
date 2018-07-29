@@ -132,6 +132,20 @@ var encodeSentence = function(sentence){
   return hexChunks;
 }
 
+// helper - when passed a sentence of hex ( produced by the above fcn ), produces a set of objs with r,g,b values
+var sentenceHexToRgb = function(sentenceHexStrArr){
+  var rgbsArr = [];
+  sentenceHexStrArr.forEach(function(sentenceHexStr){
+    var sentenceHexArr = sentenceHexStr.split(' ');
+    console.log(sentenceHexArr)
+    //sentenceHexArr[0] = Number(sentenceHexArr[0]);
+    //sentenceHexArr[1] = Number(sentenceHexArr[1]);
+    //sentenceHexArr[2] = Number(sentenceHexArr[2]);
+    rgbsArr.push( hexToRgb( [sentenceHexArr[0], sentenceHexArr[1], sentenceHexArr[2]] ) );
+  });
+  return rgbsArr;
+}
+
 
 // helper - decode an entire sentence
 // Usage: decodeSentence(["0xdd 0x5a 0x21", "0xac 0xaf 0x7b", "0xb6 0xae 0xb1", "0x0c 0x84 0x5b", "0x27 0x22 0xa2"])
