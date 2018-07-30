@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<!--
+Created using JS Bin
+http://jsbin.com
+
+Copyright (c) 2018 by anonymous (http://jsbin.com/hixabozira/1/edit)
+
+Released under the MIT license: http://jsbin.mit-license.org
+-->
+<meta name="robots" content="noindex">
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>JS Bin</title>
+  <script src="https://rawgit.com/stephaneAG/BitsOps/master/HEXOBFUSC.js"></script>
+<style id="jsbin-css">
+#toolContainer {
+  min-height: 10px;
+  min-width: 10px;
+  border: 1px solid gray;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: fit-content;
+  padding: 10px;
+  font-family: 'Monospace';
+  background: white;/*ghostwhite;*/
+}
+
+#toolContainer .section {
+  min-height: 10px;
+  min-width: 10px;
+  /*border: 1px solid gray;*/
+  display: flex;
+  flex-direction: row;
+  /*align-items: left;*/
+}
+
+#toolContainer .section .section {
+  display: flex;
+  flex-direction: column;
+  align-items: right;
+  padding: 5px;
+}
+
+
+#toolContainer .section.aleft {
+  align-self: flex-start;
+  border-bottom :none;
+}
+#toolContainer .section.aleft .title {
+  color: dodgerblue;
+}
+
+#toolContainer .section .section button {
+  padding: 5px;
+  margin: 5px;
+}
+
+#toolContainer .section textarea {
+  padding: 10px;
+  /*margin: 10px;*/
+  min-width: 385px;
+  overflow-wrap: normal;
+  overflow: visible;
+  resize: vertical;
+  min-height: 12px;
+  min-height: fit-content;
+  height: 12px;
+}
+#clear-textarea {
+  text-transform: uppercase;
+}
+
+#hex-textarea {
+  background: black;
+  color: white;
+  font-size: 13pt;
+}
+</style>
+</head>
+<body>
+  <div id="toolContainer">
+    
+    <!-- tool title & info -->
+    <div class="section aleft">
+      <p class='title'>Hexobfusc v0.1a</p>
+    </div>
+    
+    <!-- text to be encoded / decoded text -->
+    <div class="section">
+      <textarea id='clear-textarea'></textarea>
+    </div>
+    
+    <!-- buttons to decode / encode -->
+    <div class="section">
+      <div class="section">
+        <button id='decode-from-hex-btn'disabled>decode from hex</button>
+        <button id='decode-from-binary-btn' disabled>decode from binary hex file</button>
+        <button id='decode-from-img-btn'>decode from image file</button>
+      </div>
+      <div class="section">
+        <button id='encode-to-hex-btn'>encode to hex</button>
+        <button id='encode-to-binary-btn' disabled>encode to binary hex file</button>
+        <button id='encode-to-img-btn'>encode to image file</button>
+      </div>
+      
+    </div>
+
+    <!-- hex output / input -->
+    <div class="section">
+      <textarea id='hex-textarea'></textarea>
+    </div>
+    
+    <!-- img output / input -->
+    <!--
+    <div class="section">image in/out</div>
+    -->
+    
+  </div>
+<script id="jsbin-javascript">
+// == to be able to enter text & export it as encoded img ==
+var clearTextTextarea = document.querySelector('#clear-textarea');
+var hexTextarea = document.querySelector('#hex-textarea');
+var decodeFromHexBtn = document.querySelector('#decode-from-hex-btn');
+decodeFromHexBtn.addEventListener('click', function(e){
+  //clearTextTextarea.value = decodeSentence( [hexTextarea.value] );
+  console.log('fuck ?');
+}, false);
+
+var encodeToHexBtn = document.querySelector('#encode-to-hex-btn');
+encodeToHexBtn.addEventListener('click', function(e){
+  hexTextarea.value = encodeSentence( clearTextTextarea.value );
+}, false);
+
+var encodeToImgBtn = document.querySelector('#encode-to-img-btn');
+encodeToImgBtn.addEventListener('click', function(e){
+  sentenceToImg( clearTextTextarea.value ); // encode text as img & popup save dialog
+}, false);
+
+var decodeFromImageBtn = document.querySelector('#decode-from-img-btn');
+decodeFromImageBtn.addEventListener('click', function(e){
+  var fileInput = document.createElement('input');
+  fileInput.type = 'file';
+  fileInput.id = 'file-input';
+  fileInput.addEventListener('change', readSingleFile, false);
+  fileInput.click(); // auto popup open file dialog
+}, false);
+
+
+
+
+
+var hexToImage = function(seq){
+  var rgbSeq = sentenceHexToRgb(seq);
+
+  // == canvas part ==
+  //var canvas = document.querySelector('canvas');
+  var canvas = document.createElement('canvas'); // offscreen canvas
+  canvas.height = 1;
+  canvas.width = rgbSeq.length; // number of 3hex chunks or r,g,b objs
+  var ctx = canvas.getContext('2d');
+  ctx.fillStyle = 'white'; // mandatory !
+  ctx.fillRect(0, 0, canvas.width, canvas.height); // mandatory !
+  var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  var data = imageData.data;
+  for(var i=0, j=0; i < data.length; i+=4, j++) {
+    data[i] = rgbSeq[j].r;
+    data[i + 1] = rgbSeq[j].g;
+    data[i + 2] = rgbSeq[j].b;
+  }
+  ctx.putImageData(imageData, 0, 0);
+  // saving the canvas
+  var canvasImg = canvas.toDataURL();
+  var newdata = canvasImg.replace(/^data:image\/png/,'data:application/octet-stream');
+  //window.open( newdata ); // doesn't allow us to specify a filename
+  var link = document.createElement('a');
+  link.setAttribute('download', 'output.png');
+  link.setAttribute('href', newdata);
+  link.click();
+}
+
+// == imported fcn override ==
+var sentenceToImg = function(sentence){
+  var encodedSentence = encodeSentence(sentence);
+  hexTextarea.value = encodedSentence;
+  //hexTextarea.value = encodedSentence.join(' ').replace(/,/g, '');
+  //hexTextarea.value = encodedSentence.join(' ');
+  hexToImage( encodedSentence ); // R: triggers popup save dialog
+}
+// == imported fcn override ==
+var imageToSentence = function(img){
+  var hexFromImg = imageToHex(img);
+  hexTextarea.value = hexFromImg;
+  //hexTextarea.value = hexFromImg.join(' ').replace(/,/g, '');
+  //hexTextarea.value = hexFromImg.join(' ')
+  return decodeSentence( hexFromImg );
+  //console.log( imageToHex(img) )
+}
+
+// test
+//hexToImage(seq);
+//sentenceToImg('Hello world tef !');
+
+
+
+
+
+
+
+// == file reading ==
+function readSingleFile(e) {
+  var file = e.target.files[0];
+  if (!file) {
+    return;
+  }
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var imgContent = e.target.result;
+    //preview.src = reader.result; // works
+    //preview.src = imgContent; // also works
+    
+    var img = new Image();
+    img.src = imgContent; // also works ;p
+    //document.body.append(img);
+    // .. naturalWidth ?
+    //console.log( imageToHex(preview) );
+    //console.log( imageToHex(img) ); // used when not importing "HEXOBFUSC.js"
+    //var imgHexs = imageToHex(img);
+    //console.log( decodeSentence( imgHexs ) );
+    img.onload = function(e){
+      console.log('image loaded !');
+      //console.log( imageToHex(img) );
+      //console.log( imageToSentence(img) );
+      clearTextTextarea.value = imageToSentence(img);
+    }
+    
+  };
+  //reader.readAsText(file);
+  reader.readAsDataURL(file);
+}
+
+
+// == troubles when importing - maybe rawgit didn't update yet ==
+var myDic = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'; // 36 chars
+myDic += ' ?.,:;!=-+/*()[]{}<>#"\'\~|^&%' // 28 chars
+myDic = myDic.split('');
+
+var imageToHex = function(img){
+  //var rgbSeq = sentenceHexToRgb(seq);
+
+  // == canvas part ==
+  //var canvas = document.querySelector('canvas');
+  var canvas = document.createElement('canvas'); // offscreen canvas
+  canvas.height = img.naturalHeight;
+  canvas.width = img.naturalWidth;
+  var ctx = canvas.getContext('2d');
+  ctx.drawImage(img, 0, 0); // draw img to canvas
+  var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  var data = imageData.data;
+  var hexsArr = [];
+  for(var i=0, j=0; i < data.length; i+=4, j++) {
+    hexsArr[j] = rgbToHex( { r: data[i], g: data[i + 1], b: data[i + 2] } );
+  }
+  return hexsArr;
+}
+var rgbToHex = function(rgbObj, hash){
+  var hexR = (rgbObj.r.toString(16).length == 2 )? rgbObj.r.toString(16) : '0' + rgbObj.r.toString(16);
+  var hexG = (rgbObj.g.toString(16).length == 2 )? rgbObj.g.toString(16) : '0' + rgbObj.g.toString(16);
+  var hexB = (rgbObj.b.toString(16).length == 2 )? rgbObj.b.toString(16) : '0' + rgbObj.b.toString(16);
+  // unpadded
+  //if (hash == true) return '#' + rgbObj.r.toString(16) + rgbObj.g.toString(16) + rgbObj.b.toString(16);
+  //else return '0x' + rgbObj.r.toString(16) + ' 0x' + rgbObj.g.toString(16) + ' 0x' + rgbObj.b.toString(16);
+  // padded
+  if (hash == true) return '#' + hexR + hexG + hexB;
+  else return '0x' + hexR + ' 0x' + hexG + ' 0x' + hexB;
+}
+</script>
+</body>
+</html>
