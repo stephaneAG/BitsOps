@@ -1,6 +1,11 @@
 # BitsOps
 Repo dedicated to notes on bitwise operators &amp; direct bits manipulation
 
+# the EISA EDID edition tool is not yet written, only one helper that generates a valid manufacturer name from 3 chars
+
+# for the Hexobfusc tool, visite the following link
+https://cdn.rawgit.com/stephaneAG/BitsOps/master/encoderDecoderWip.html
+
 ## Reminders
 &   -  bitwise and
 |   -  bitwise or
