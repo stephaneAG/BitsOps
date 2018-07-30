@@ -5,6 +5,7 @@ Repo dedicated to notes on bitwise operators &amp; direct bits manipulation
 
 # for the Hexobfusc tool, visite the following link
 https://cdn.rawgit.com/stephaneAG/BitsOps/master/encoderDecoderWip.html
+R: to update it: https://developer.mozilla.org/en-US/docs/Web/API/Blob
 <img src="./HexobfuscV0.1a.png"/>
 
 ## Reminders
