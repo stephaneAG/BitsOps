@@ -176,11 +176,36 @@ var hexToImage = function(seq){
   link.click();
 }
 
+// helper - returns an array of hexs from an image
+var imageToHex = function(img){
+  //var rgbSeq = sentenceHexToRgb(seq);
+
+  // == canvas part ==
+  //var canvas = document.querySelector('canvas');
+  var canvas = document.createElement('canvas'); // offscreen canvas
+  canvas.height = img.naturalHeight;
+  canvas.width = img.naturalWidth;
+  var ctx = canvas.getContext('2d');
+  ctx.drawImage(img, 0, 0); // draw img to canvas
+  var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  var data = imageData.data;
+  var hexsArr = [];
+  for(var i=0, j=0; i < data.length; i+=4, j++) {
+    hexsArr[j] = rgbToHex( { r: data[i], g: data[i + 1], b: data[i + 2] } );
+  }
+  return hexsArr;
+}
+
 // helper - encodes a sentence to hex & then generate a wide 1px tall image with pixel-encoded hex
 var sentenceToImg = function(sentence){
   hexToImage( encodeSentence(sentence) );
 }
 
+// helper - decodes an image to hex & then returns the text decoded from the hexs
+var imageToSentence = function(img){
+  return decodeSentence( imageToHex(img) );
+  //console.log( imageToHex(img) )
+}
 
 // helper - decode an entire sentence
 // Usage: decodeSentence(["0xdd 0x5a 0x21", "0xac 0xaf 0x7b", "0xb6 0xae 0xb1", "0x0c 0x84 0x5b", "0x27 0x22 0xa2"])
@@ -519,3 +544,16 @@ hexToRgb( genThreeLettersChunk('TEF', true) )
 hexToRgb( genThreeLettersChunk('TEF', true), true )
 //> "rgb(93,78,79)"
 */
+
+// helper - returns either "0xYY 0xYY 0xYY" or "#YYYYYY"
+var rgbToHex = function(rgbObj, hash){
+  var hexR = (rgbObj.r.toString(16).length == 2 )? rgbObj.r.toString(16) : '0' + rgbObj.r.toString(16);
+  var hexG = (rgbObj.g.toString(16).length == 2 )? rgbObj.g.toString(16) : '0' + rgbObj.g.toString(16);
+  var hexB = (rgbObj.b.toString(16).length == 2 )? rgbObj.b.toString(16) : '0' + rgbObj.b.toString(16);
+  // unpadded
+  //if (hash == true) return '#' + rgbObj.r.toString(16) + rgbObj.g.toString(16) + rgbObj.b.toString(16);
+  //else return '0x' + rgbObj.r.toString(16) + ' 0x' + rgbObj.g.toString(16) + ' 0x' + rgbObj.b.toString(16);
+  // padded
+  if (hash == true) return '#' + hexR + hexG + hexB;
+  else return '0x' + hexR + ' 0x' + hexG + ' 0x' + hexB;
+}
