@@ -101,7 +101,7 @@
 // R: max 64 chars possible ( idx [0..63] ), so let's make our dict 64 items
 // ( 64 == 0b01000000, 63 == 0b00111111 )
 var myDic = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'; // 36 chars
-myDic += ' ?.:;!=-+/*()[]{}<>#"\'\~|^&%@' // 28 chars
+myDic += ' ?.,:;!=-+/*()[]{}<>#"\'\~|^&%' // 28 chars
 myDic = myDic.split('');
 
 // helper - split sentence in a 3 chars chunk array
