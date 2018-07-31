@@ -348,7 +348,8 @@ var genThreeLettersChunk = function(threeCharsChunk, arr, offset){
   var thirdLetterBin = asciiToInt(charsArr[2]);
   //var randomOffsetBin = (offset !== undefined)? offset : getRandomInt(0, 36);
   //var randomOffsetBin = (offset !== undefined)? offset : getRandomInt(1, 36); // little tweak to ALWAYS offset the dic ;)
-  var randomOffsetBin = (offset !== undefined)? offset : getRandomInt(1, myDic.length); // now offerinf 63 char offset support ;)
+  //var randomOffsetBin = (offset !== undefined)? offset : getRandomInt(1, myDic.length); // now offerinf 63 char offset support ;)
+  var randomOffsetBin = (offset !== undefined)? offset : getRandomInt(1, myDic.length-1); // we don't want to reach 64 ( 0x124 )
   //randomOffsetBin = 0b00111111; // DEBUG - works ( 0x3f / 63)
   //randomOffsetBin = 0b00111100; // DEBUG - works ( 0x3c / 60 )
   console.log( 'encoding randomOffset: ' + randomOffsetBin );
