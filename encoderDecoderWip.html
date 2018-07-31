@@ -131,7 +131,7 @@ decodeFromHexBtn.addEventListener('click', function(e){
 
 var encodeToHexBtn = document.querySelector('#encode-to-hex-btn');
 encodeToHexBtn.addEventListener('click', function(e){
-  hexTextarea.value = encodeSentence( clearTextTextarea.value );
+  hexTextarea.value = encodeSentence( clearTextTextarea.value ).join(' ');
 }, false);
 
 var encodeToImgBtn = document.querySelector('#encode-to-img-btn');
@@ -186,7 +186,7 @@ var sentenceToImg = function(sentence){
   var encodedSentence = encodeSentence(sentence);
   hexTextarea.value = encodedSentence;
   //hexTextarea.value = encodedSentence.join(' ').replace(/,/g, '');
-  //hexTextarea.value = encodedSentence.join(' ');
+  hexTextarea.value = encodedSentence.join(' ');
   hexToImage( encodedSentence ); // R: triggers popup save dialog
 }
 // == imported fcn override ==
@@ -194,7 +194,7 @@ var imageToSentence = function(img){
   var hexFromImg = imageToHex(img);
   hexTextarea.value = hexFromImg;
   //hexTextarea.value = hexFromImg.join(' ').replace(/,/g, '');
-  //hexTextarea.value = hexFromImg.join(' ')
+  hexTextarea.value = hexFromImg.join(' ')
   return decodeSentence( hexFromImg );
   //console.log( imageToHex(img) )
 }
