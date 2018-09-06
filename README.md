@@ -8,17 +8,21 @@ https://cdn.rawgit.com/stephaneAG/BitsOps/master/encoderDecoderWip.html
 R: to update it: https://developer.mozilla.org/en-US/docs/Web/API/Blob
 <img src="./HexobfuscV0.1a.png"/>
 
-## Reminders
-&   -  bitwise and
-|   -  bitwise or
-^   -  bitwise xor
-~   -  bitwise not
-<<  -  bitwise shift left unsigned
->>  -  bitwise shift right unsigned
->>> -  bitwise shift right signed
+## to thoroughly DIGG !
+- http://graphics.stanford.edu/~seander/bithacks.html
+- http://www.catonmat.net/blog/low-level-bit-hacks-you-absolutely-must-know/
 
-0x.. - hex / base 16
-0b.. - bin / base 2
+## Reminders
+_ &   -  bitwise and  
+_ |   -  bitwise or  
+_ ^   -  bitwise xor  
+_ ~   -  bitwise not  
+_ <<  -  bitwise shift left unsigned  
+_ >>  -  bitwise shift right unsigned  
+_ >>> -  bitwise shift right signed  
+
+_ 0x.. - hex / base 16  
+_ 0b.. - bin / base 2  
 
 ### Tips
 
